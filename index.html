@@ -49,14 +49,14 @@ EMT: línea|destino|lugares separados por ; (un número = dársena, texto = para
 const INTER=`171|Urb. Santo Domingo|45|Alsa
 876|Moralzarzal - Collado Villalba|44|Fco. Larrea
 N101|Alcobendas (nocturno)|44|Interbus
-N102|S. Sebastián de los Reyes (nocturno)|43|Interbus
+N102|San Sebastián de los Reyes (nocturno)|43|Interbus
 N103|Algete (nocturno)|42|Interbus
-N104|S. Agustín de Guadalix (nocturno)|51|Alsa
+N104|San Agustín de Guadalix (nocturno)|51|Alsa
 N701|Tres Cantos (nocturno)|52|Alsa
 N702|Colmenar Viejo (nocturno)|53|H. J. Colmenarejo
 151|Alcobendas|44|Interbus
 155|El Soto de la Moraleja|44|Interbus
-156|S. Sebastián de los Reyes (Pol. Ind. Moscatelares)|43|Interbus
+156|San Sebastián de los Reyes (Pol. Ind. Moscatelares)|43|Interbus
 161|Urb. Fuente del Fresno|43|Interbus
 181|Algete|42|Interbus
 182|Algete - Valdeolmos|42|Interbus
@@ -81,11 +81,11 @@ N702|Colmenar Viejo (nocturno)|53|H. J. Colmenarejo
 714|Univ. Autónoma - Univ. Comillas|34|Alsa
 716|Tres Cantos (Soto de Viñuelas)|31|Alsa
 151|Alcobendas|1|Interbus
-152C|S. Sebastián de los Reyes (Dehesa Vieja)|5|Interbus
+152C|San Sebastián de los Reyes (Dehesa Vieja)|5|Interbus
 153|Alcobendas - Rosa de Luxemburgo|1|Interbus
-154C|S. Sebastián de los Reyes (Av. Quiñones)|5|Interbus
+154C|San Sebastián de los Reyes (Av. Quiñones)|5|Interbus
 155|El Soto de la Moraleja|3|Interbus
-156|S. Sebastián de los Reyes (Pol. Ind. Moscatelares)|4|Interbus
+156|San Sebastián de los Reyes (Pol. Ind. Moscatelares)|4|Interbus
 181|Algete|6|Interbus
 182|Algete - Valdeolmos|7|Interbus
 183|Cobeña - Algete|7|Interbus
@@ -139,7 +139,7 @@ function add(n,dest,pl,tipo){
 INTER.split("\n").forEach(r=>{const[n,dest,d,emp]=r.split("|");add(n,dest,{d:+d,emp},/^N/.test(n)?"noc":"inter")});
 EMT.split("\n").forEach(r=>{const[n,dest,pls]=r.split("|");pls.split(";").forEach(p=>add(n,dest,/^\d+$/.test(p)?{d:+p,emp:"EMT"}:{txt:p},/^N/.test(n)?"noc":"emt"))});
 const lines=[...L.values()];
-lines.forEach(l=>l.h=norm(l.n+" "+l.dest));
+lines.forEach(l=>l.h=norm(l.n+" "+l.dest+(/Sebasti/.test(l.dest)?" sanse":"")));
 const $=id=>document.getElementById(id),out=$("out"),q=$("q");
 
 function card(l){
