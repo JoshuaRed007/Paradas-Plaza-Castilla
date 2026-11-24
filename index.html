@@ -43,7 +43,9 @@ footer{color:var(--mut);font-size:13px;padding:0 14px 30px;max-width:640px;margi
   <div class="chips" id="chips"></div>
 </header>
 <main id="out"></main>
-<footer>Datos del plano oficial del Consorcio (versión 0520). Si algo ha cambiado, edita la lista DATOS al final de este archivo.<br><br>Creado por: Israel Pérez</footer>
+<footer>Datos del plano oficial del Consorcio (versión 0520).<br><br><p style="color: #6F1F54; font-size: 18px; font-family: Times;">
+  Creado por: Israel Pérez
+</p></footer>
 <script>
 /* ---------- DATOS (editables) ----------
 Interurbanas: línea|destino|dársena|empresa
@@ -154,7 +156,14 @@ function card(l){
 function render(){
   const v=norm(q.value.trim()),f=document.querySelector(".chips .on")?.dataset.f||"";
   let html="";
-  if(!v&&!f){out.innerHTML=`<div class="hint">Escribe el número de la línea (ej. 151), el número de la dársena (ej. 44) o el destino (ej. Alcobendas).</div>`;return}
+  if(!v&&!f){out.innerHTML=`<div class="hint">
+Escribe lo que te dé la gana...<BR>
+- El número de la línea (ej. 151).<br> 
+- El número de la dársena (ej. 44) <BR>
+- El destino* (ej. Alcobendas).<BR><BR>
+<p style="font-size: 13px">
+*Aquí por comodidad, mejor usar el micro del teclado para la entrada de voz a texto ; )
+</p></div>`;return}
   let res=lines;
   if(f==="emt")res=res.filter(l=>l.tipo==="emt"||l.tipo==="noc"&&l.pl.some(p=>p.txt));
   if(f==="inter")res=res.filter(l=>l.pl.some(p=>p.d&&p.emp!=="EMT"));
