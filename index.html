@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f3a">
+<title>Plaza de Castilla · Buses y dársenas</title>
+<style>
+:root{--bg:#f3f5f2;--card:#fff;--tx:#14201a;--mut:#5d6b62;--ln:#d8dfd9;--g:#1f6f3a;--b:#0b5cad;--n:#1a1a1a;--ngt:#ffd400}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1511;--card:#18211b;--tx:#eef3ef;--mut:#9aa89f;--ln:#2a362e;--g:#5cc27b;--b:#6db3f2;--n:#ffd400;--ngt:#111}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:17px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{position:sticky;top:0;background:var(--bg);padding:12px 14px 8px;z-index:5;border-bottom:1px solid var(--ln)}
+h1{font-size:15px;margin:0 0 8px;color:var(--mut);font-weight:600}
+#q{width:100%;font:inherit;font-size:22px;padding:14px 16px;border-radius:14px;border:2px solid var(--g);background:var(--card);color:var(--tx);outline:none}
+#q:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--g) 30%,transparent)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px}
+.chips button{flex:none;font:inherit;font-size:15px;padding:8px 14px;border-radius:20px;border:1px solid var(--ln);background:var(--card);color:var(--tx)}
+.chips button.on{background:var(--g);color:#fff;border-color:var(--g)}
+main{padding:12px 14px 40px;max-width:640px;margin:0 auto}
+.hint{color:var(--mut);padding:18px 4px}
+h2{font-size:15px;margin:18px 0 8px;color:var(--mut);font-weight:600}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.num{flex:none;min-width:64px;text-align:center;font-weight:800;font-size:24px;padding:8px 6px;border-radius:10px;color:#fff;background:var(--g)}
+.num.emt{background:var(--b)}
+.num.noc{background:var(--n);color:var(--ngt)}
+.dest{font-weight:650}
+.pl{margin-top:6px;display:flex;flex-direction:column;gap:5px}
+.p{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.d{font-weight:800;font-size:20px;color:var(--g)}
+.p small{color:var(--mut);font-size:14px}
+.warn{font-size:13px;color:var(--mut);margin-top:6px}
+footer{color:var(--mut);font-size:13px;padding:0 14px 30px;max-width:640px;margin:0 auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Plaza de Castilla · Intercambiador</h1>
+  <input id="q" type="search" inputmode="search" autocomplete="off" autocapitalize="off" placeholder="Línea, dársena o destino" aria-label="Buscar">
+  <div class="chips" id="chips"></div>
+</header>
+<main id="out"></main>
+<footer>Datos del plano oficial del Consorcio (versión 0520). Si algo ha cambiado, edita la lista DATOS al final de este archivo.</footer>
+<script>
+/* ---------- DATOS (editables) ----------
+Interurbanas: línea|destino|dársena|empresa
+EMT: línea|destino|lugares separados por ; (un número = dársena, texto = parada en calle) */
+const INTER=`171|Urb. Santo Domingo|45|Alsa
+876|Moralzarzal - Collado Villalba|44|Fco. Larrea
+N101|Alcobendas (nocturno)|44|Interbus
+N102|S. Sebastián de los Reyes (nocturno)|43|Interbus
+N103|Algete (nocturno)|42|Interbus
+N104|S. Agustín de Guadalix (nocturno)|51|Alsa
+N701|Tres Cantos (nocturno)|52|Alsa
+N702|Colmenar Viejo (nocturno)|53|H. J. Colmenarejo
+151|Alcobendas|44|Interbus
+155|El Soto de la Moraleja|44|Interbus
+156|S. Sebastián de los Reyes (Pol. Ind. Moscatelares)|43|Interbus
+161|Urb. Fuente del Fresno|43|Interbus
+181|Algete|42|Interbus
+182|Algete - Valdeolmos|42|Interbus
+183|Cobeña - Algete|42|Interbus
+191|Buitrago de Lozoya|45|Alsa
+193|Pedrezuela - El Vellón|51|Alsa
+197|Torrelaguna / Uceda|51|Alsa
+712|Tres Cantos (Av. de Encuartes)|47|Alsa
+713|Tres Cantos (Av. del Parque)|47|Alsa
+716|Tres Cantos (Soto de Viñuelas)|52|Alsa
+724|Manzanares - El Boalo|53|H. J. Colmenarejo
+725|Miraflores - Bustarviejo - Valdemanco|53|H. J. Colmenarejo
+726|Guadalix - Navalafuente|53|H. J. Colmenarejo
+191|Buitrago de Lozoya|37|Alsa
+193|Pedrezuela - El Vellón|36|Alsa
+194|Rascafría|35|Alsa
+195|Braojos|35|Alsa
+196|La Acebeda|35|Alsa
+197|Torrelaguna / Uceda|33|Alsa
+712|Tres Cantos (Av. de Encuartes)|30|Alsa
+713|Tres Cantos (Av. del Parque)|30|Alsa
+714|Univ. Autónoma - Univ. Comillas|34|Alsa
+716|Tres Cantos (Soto de Viñuelas)|31|Alsa
+151|Alcobendas|1|Interbus
+152C|S. Sebastián de los Reyes (Dehesa Vieja)|5|Interbus
+153|Alcobendas - Rosa de Luxemburgo|1|Interbus
+154C|S. Sebastián de los Reyes (Av. Quiñones)|5|Interbus
+155|El Soto de la Moraleja|3|Interbus
+156|S. Sebastián de los Reyes (Pol. Ind. Moscatelares)|4|Interbus
+181|Algete|6|Interbus
+182|Algete - Valdeolmos|7|Interbus
+183|Cobeña - Algete|7|Interbus
+184|El Casar de Talamanca|7|Interbus
+185|Nuevo Algete|6|Interbus
+155B|El Encinar de los Reyes|29|Interbus
+157|Alcobendas (Pº Chopera)|23|Interbus
+157C|Alcobendas (Valdelasfuentes)|23|Interbus
+159|Alcobendas (Arroyo de la Vega)|22|Interbus
+161|Urb. Fuente del Fresno|24|Interbus
+721|Colmenar Viejo|25|H. J. Colmenarejo
+722|Colmenar Viejo (Gta. Mediterráneo)|25|H. J. Colmenarejo
+724|Manzanares - El Boalo|26|H. J. Colmenarejo
+725|Miraflores - Bustarviejo - Valdemanco|28|H. J. Colmenarejo
+726|Guadalix - Navalafuente|27|H. J. Colmenarejo`;
+const CAST_P="Castellana (pares), lado Intercambiador",CAST_I="Castellana (impares), junto Metro acceso 2",MATEO="C/ Mateo Inurria / Castellana (pares)",BRAVO="C/ Bravo Murillo",AST="Av. de Asturias";
+const EMT=`5|Puerta del Sol - Sevilla - Est. Chamartín|${MATEO}
+27|Gta. Embajadores - Plaza de Castilla|41;${CAST_P}
+42|Plaza de Castilla - Barrio de Peña Grande|42;${CAST_I};${AST}
+49|Plaza de Castilla - Arroyo del Fresno|42;${BRAVO}
+66|Gta. Cuatro Caminos - Fuencarral|${CAST_P};${BRAVO}
+67|Plaza de Castilla - Barrio de Peña Grande|51
+70|Plaza de Castilla - Alsacia|53;${MATEO}
+107|Plaza de Castilla - Hortaleza|44;${MATEO}
+124|Gta. Cuatro Caminos - Lacoma|${CAST_I};${CAST_P};${BRAVO}
+129|Plaza de Castilla - Manoteras|50;${MATEO}
+134|Plaza de Castilla - Montecarmelo|46
+135|Plaza de Castilla - Hospital Ramón y Cajal|52
+147|Plaza del Callao - Barrio del Pilar|${CAST_I};${CAST_P}
+149|Tribunal - Plaza de Castilla|Cabecera en ${BRAVO}
+173|Plaza de Castilla - Sanchinarro|43
+174|Plaza de Castilla - Valdebebas|43;${MATEO}
+175|Plaza de Castilla - Las Tablas Norte|48
+176|Plaza de Castilla - Las Tablas Sur|49
+177|Plaza de Castilla - Marqués de Viana|50
+178|Plaza de Castilla - Montecarmelo|47
+T62|Plaza de Castilla - Estación de Chamartín|${CAST_P}
+SE|Plaza de Castilla - Cementerio de Fuencarral|${CAST_P}
+N22|Plaza Cibeles - Barrio del Pilar (nocturno)|${CAST_P}
+N23|Plaza Cibeles - Montecarmelo (nocturno)|${CAST_I};${AST}
+N24|Plaza Cibeles - Las Tablas (nocturno)|${CAST_I};${CAST_P}`;
+
+/* ---------- LÓGICA ---------- */
+const nivel=d=>d<=10?"Isla 1 · Nivel -3":d<=29?"Isla 2 · Nivel -3":d<=39?"Isla 3 · Nivel -1":"Isla 4 · Nivel 0 (superficie)";
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const L=new Map();
+function add(n,dest,pl,tipo){
+  if(!L.has(n))L.set(n,{n,dest,tipo,pl:[]});
+  L.get(n).pl.push(pl);
+}
+INTER.split("\n").forEach(r=>{const[n,dest,d,emp]=r.split("|");add(n,dest,{d:+d,emp},/^N/.test(n)?"noc":"inter")});
+EMT.split("\n").forEach(r=>{const[n,dest,pls]=r.split("|");pls.split(";").forEach(p=>add(n,dest,/^\d+$/.test(p)?{d:+p,emp:"EMT"}:{txt:p},/^N/.test(n)?"noc":"emt"))});
+const lines=[...L.values()];
+lines.forEach(l=>l.h=norm(l.n+" "+l.dest));
+const $=id=>document.getElementById(id),out=$("out"),q=$("q");
+
+function card(l){
+  const cls=l.tipo==="emt"?"emt":l.tipo==="noc"?"noc":"";
+  const pl=l.pl.map(p=>p.txt?`<div class="p"><span>📍 ${p.txt}</span></div>`:
+    `<div class="p"><span class="d">Dársena ${p.d}</span><small>${nivel(p.d)}${p.emp&&p.emp!=="EMT"?" · "+p.emp:""}</small></div>`).join("");
+  const multi=l.pl.length>1?`<div class="warn">Esta línea para en más de un sitio según el plano.</div>`:"";
+  return `<div class="card"><div class="num ${cls}">${l.n}</div><div><div class="dest">${l.dest}</div><div class="pl">${pl}</div>${multi}</div></div>`;
+}
+function render(){
+  const v=norm(q.value.trim()),f=document.querySelector(".chips .on")?.dataset.f||"";
+  let html="";
+  if(!v&&!f){out.innerHTML=`<div class="hint">Escribe el número de la línea (ej. 151), el número de la dársena (ej. 44) o el destino (ej. Alcobendas).</div>`;return}
+  let res=lines;
+  if(f==="emt")res=res.filter(l=>l.tipo==="emt"||l.tipo==="noc"&&l.pl.some(p=>p.txt));
+  if(f==="inter")res=res.filter(l=>l.pl.some(p=>p.d&&p.emp!=="EMT"));
+  if(f==="noc")res=res.filter(l=>l.tipo==="noc");
+  if(/^\d+$/.test(v)){
+    const d=+v,porD=lines.filter(l=>l.pl.some(p=>p.d===d));
+    const porN=res.filter(l=>norm(l.n).startsWith(v));
+    if(porD.length&&d<=53&&d>0)html+=`<h2>Qué sale de la dársena ${d} · ${nivel(d)}</h2>`+porD.map(card).join("");
+    if(porN.length)html+=`<h2>Línea ${v}</h2>`+porN.map(card).join("");
+    if(!html)html=`<div class="hint">Sin resultados para «${q.value}».</div>`;
+  }else{
+    const t=v.split(/\s+/).filter(Boolean);
+    const r=res.filter(l=>t.every(x=>l.h.includes(x)));
+    html=r.length?r.map(card).join(""):`<div class="hint">Sin resultados para «${q.value}».</div>`;
+  }
+  out.innerHTML=html;
+}
+[["","Todo"],["inter","Interurbanos"],["emt","EMT"],["noc","Nocturnos"]].forEach(([f,t],i)=>{
+  const b=document.createElement("button");b.textContent=t;b.dataset.f=f;if(!f)b.className="on";
+  b.onclick=()=>{document.querySelectorAll(".chips button").forEach(x=>x.classList.remove("on"));b.classList.add("on");render()};
+  $("chips").appendChild(b);
+});
+q.addEventListener("input",render);render();q.focus();
+</script>
+</body>
+</html>
